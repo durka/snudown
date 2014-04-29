@@ -1099,12 +1099,21 @@ char_superscript(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t
 {
 	size_t sup_start, sup_len;
 	struct buf *sup;
+    int super;
 
 	if (!rndr->cb.superscript)
 		return 0;
 
 	if (size < 2)
 		return 0;
+
+    if (data[0] == '^') {
+        super = 1;
+    } else if (data[0] == '_') {
+        super = 0;
+    } else {
+        return 0;
+    }
 
 	if (data[1] == '(') {
 		sup_start = sup_len = 2;
@@ -1126,7 +1135,7 @@ char_superscript(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t
 
 	sup = rndr_newbuf(rndr, BUFFER_SPAN);
 	parse_inline(sup, rndr, data + sup_start, sup_len - sup_start);
-	rndr->cb.superscript(ob, sup, rndr->opaque);
+	rndr->cb.superscript(ob, super, sup, rndr->opaque);
 	rndr_popbuf(rndr, BUFFER_SPAN);
 
 	return (sup_start == 2) ? sup_len + 1 : sup_len;
@@ -2468,8 +2477,10 @@ sd_markdown_new(
 		md->active_char['/'] = MD_CHAR_AUTOLINK_SUBREDDIT_OR_USERNAME;
 	}
 
-	if (extensions & MKDEXT_SUPERSCRIPT)
+	if (extensions & MKDEXT_SUPERSCRIPT) {
 		md->active_char['^'] = MD_CHAR_SUPERSCRIPT;
+        md->active_char['_'] = MD_CHAR_SUPERSCRIPT;
+    }
 
 	/* Extension data */
 	md->ext_flags = extensions;

@@ -587,12 +587,20 @@ rndr_tablecell(struct buf *ob, const struct buf *text, int flags, void *opaque)
 }
 
 static int
-rndr_superscript(struct buf *ob, const struct buf *text, void *opaque)
+rndr_superscript(struct buf *ob, int super, const struct buf *text, void *opaque)
 {
 	if (!text || !text->size) return 0;
-	BUFPUTSL(ob, "<sup>");
+    if (super) {
+        BUFPUTSL(ob, "<sup>");
+    } else {
+        BUFPUTSL(ob, "<sub>");
+    }
 	bufput(ob, text->data, text->size);
-	BUFPUTSL(ob, "</sup>");
+    if (super) {
+        BUFPUTSL(ob, "</sup>");
+    } else {
+        BUFPUTSL(ob, "</sub>");
+    }
 	return 1;
 }
 
